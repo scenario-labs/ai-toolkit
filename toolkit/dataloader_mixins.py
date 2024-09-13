@@ -204,6 +204,7 @@ class BucketsMixin:
                 # Attempt to process the poi if we can. It wont process if the image is smaller than the resolution
                 did_process_poi = file_item.setup_poi_bucket()
             if self.dataset_config.square_crop:
+                print("square cropping)
                 # we scale first so smallest size matches resolution
                 scale_factor_x = resolution / width
                 scale_factor_y = resolution / height
@@ -763,6 +764,7 @@ class ClipImageFileItemDTOMixin:
         if img.width != img.height:
             min_size = min(img.width, img.height)
             if self.dataset_config.square_crop:
+                print("Center cropping to a square")
                 # center crop to a square
                 img = transforms.CenterCrop(min_size)(img)
             else:
