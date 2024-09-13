@@ -604,6 +604,7 @@ class DatasetConfig:
         self.prefetch_factor: int = kwargs.get('prefetch_factor', 2)
         self.extra_values: List[float] = kwargs.get('extra_values', [])
         self.square_crop: bool = kwargs.get('square_crop', False)
+        print(f"square crop: {self.square_crop}")
         # apply same augmentations to control images. Usually want this true unless special case
         self.replay_transforms: bool = kwargs.get('replay_transforms', True)
 
