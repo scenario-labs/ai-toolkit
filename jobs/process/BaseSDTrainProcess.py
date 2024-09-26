@@ -1739,41 +1739,41 @@ class BaseSDTrainProcess(BaseTrainProcess):
                         batch.cleanup()
 
                 # don't do on first step
-                if self.step_num != self.start_step:
-                    if is_sample_step:
-                        self.progress_bar.pause()
-                        flush()
-                        # print above the progress bar
-                        if self.train_config.free_u:
-                            self.sd.pipeline.disable_freeu()
-                        self.sample(self.step_num)
-                        self.ensure_params_requires_grad()
+                #if self.step_num != self.start_step:  # changed so that I get the initial LoRA weights and can compute after training which layers have moved the most
+                if is_sample_step:
+                    self.progress_bar.pause()
+                    flush()
+                    # print above the progress bar
+                    if self.train_config.free_u:
+                        self.sd.pipeline.disable_freeu()
+                    self.sample(self.step_num)
+                    self.ensure_params_requires_grad()
+                    self.progress_bar.unpause()
+
+                if is_save_step:
+                    # print above the progress bar
+                    self.progress_bar.pause()
+                    self.print(f"Saving at step {self.step_num}")
+                    self.save(self.step_num)
+                    self.ensure_params_requires_grad()
+                    self.progress_bar.unpause()
+
+                if self.logging_config.log_every and self.step_num % self.logging_config.log_every == 0:
+                    self.progress_bar.pause()
+                    with self.timer('log_to_tensorboard'):
+                        # log to tensorboard
+                        if self.writer is not None:
+                            for key, value in loss_dict.items():
+                                self.writer.add_scalar(f"{key}", value, self.step_num)
+                            self.writer.add_scalar(f"lr", learning_rate, self.step_num)
                         self.progress_bar.unpause()
 
-                    if is_save_step:
-                        # print above the progress bar
-                        self.progress_bar.pause()
-                        self.print(f"Saving at step {self.step_num}")
-                        self.save(self.step_num)
-                        self.ensure_params_requires_grad()
-                        self.progress_bar.unpause()
-
-                    if self.logging_config.log_every and self.step_num % self.logging_config.log_every == 0:
-                        self.progress_bar.pause()
-                        with self.timer('log_to_tensorboard'):
-                            # log to tensorboard
-                            if self.writer is not None:
-                                for key, value in loss_dict.items():
-                                    self.writer.add_scalar(f"{key}", value, self.step_num)
-                                self.writer.add_scalar(f"lr", learning_rate, self.step_num)
-                            self.progress_bar.unpause()
-
-                    if self.performance_log_every > 0 and self.step_num % self.performance_log_every == 0:
-                        self.progress_bar.pause()
-                        # print the timers and clear them
-                        self.timer.print()
-                        self.timer.reset()
-                        self.progress_bar.unpause()
+                if self.performance_log_every > 0 and self.step_num % self.performance_log_every == 0:
+                    self.progress_bar.pause()
+                    # print the timers and clear them
+                    self.timer.print()
+                    self.timer.reset()
+                    self.progress_bar.unpause()
 
                 # sets progress bar to match out step
                 self.progress_bar.update(step - self.progress_bar.n)
